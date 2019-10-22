@@ -1,4 +1,6 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
+
 
 <!DOCTYPE html>
 <html>
@@ -7,6 +9,11 @@
 </head>
 <body>
 	<p>Welcome to Spring Security Home Page!</p>
+	<hr>
+	   <!-- display username and role -->
+	   User: <security:authentication property="principal.username" />
+	   <br>
+	   Role: <security:authentication property="principal.authorities" />
 	<hr>
 
 	<!-- Logout handling -->

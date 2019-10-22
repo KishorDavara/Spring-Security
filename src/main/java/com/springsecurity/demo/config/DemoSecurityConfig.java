@@ -27,7 +27,7 @@ public class DemoSecurityConfig extends WebSecurityConfigurerAdapter {
 		UserBuilder users = User.withDefaultPasswordEncoder();
 
 		auth.inMemoryAuthentication().withUser(users.username("Kishor").password("user123").roles("EMPLOYEE"))
-				.withUser(users.username("Niki").password("user123").roles("MANAGER"))
+				.withUser(users.username("Niki").password("user123").roles("EMPLOYEE","MANAGER"))
 				.withUser(users.username("John").password("user123").roles("ADMIN"));
 	}
 
