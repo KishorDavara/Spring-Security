@@ -25,9 +25,10 @@ public class ProjectSecurityConfig {
         /*
         * Custom security configuration
         * */
-        http.authorizeHttpRequests()
+        http.csrf().disable()
+                .authorizeHttpRequests()
                 .requestMatchers("/myAccount","/myBalance","/myCards","/myLoans").authenticated()
-                .requestMatchers("/contact","/notices").permitAll()
+                .requestMatchers("/contact","/notices","/register").permitAll()
                 .and().formLogin()
                 .and().httpBasic();
 
@@ -91,10 +92,11 @@ public class ProjectSecurityConfig {
 //    }
 
 
-    @Bean
-    public UserDetailsService userDetailsService(DataSource dataSource) {
-        return new JdbcUserDetailsManager(dataSource);
-    }
+// This will create conflict with Custom UserDetailsService implementation
+//    @Bean
+//    public UserDetailsService userDetailsService(DataSource dataSource) {
+//        return new JdbcUserDetailsManager(dataSource);
+//    }
 
     /**
      * NoOpPasswordEncoder is not recommended for production usage. Use only for non-prod
