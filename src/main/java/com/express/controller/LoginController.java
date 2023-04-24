@@ -5,10 +5,12 @@ import com.express.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.sql.Date;
+import java.util.List;
 
 @RestController
 public class LoginController {
@@ -25,6 +27,7 @@ public class LoginController {
         try {
             String hasedPassword = passwordEncoder.encode(customer.getPwd());
             customer.setPwd(hasedPassword);
+            customer.setCreateDt(String.valueOf(new Date(System.currentTimeMillis())));
             Customer result = customerRepository.save(customer);
             if (result != null) {
                 response = ResponseEntity
@@ -36,5 +39,11 @@ public class LoginController {
                     .body("An exception occurred due to " + ex.getMessage());
         }
         return response;
+    }
+
+    @GetMapping("/user")
+    public Customer getUserDetailsAfterLogin(Authentication authentication){
+        List<Customer> customers = customerRepository.findByEmail(authentication.getName());
+        return !customers.isEmpty() ? customers.get(0) : null;
     }
 }
