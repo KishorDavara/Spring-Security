@@ -40,10 +40,10 @@ public class ProjectSecurityConfig {
             configuration.setMaxAge(3600L);
             return configuration;
         })
-                .and().csrf().disable()
-                .authorizeHttpRequests()
+                .and().csrf().ignoringRequestMatchers("/contact","/register")
+                .and().authorizeHttpRequests()
                 .requestMatchers("/myAccount","/myBalance","/myCards","/myLoans").authenticated()
-                .requestMatchers("/contact","/notices","/register").permitAll()
+                .requestMatchers("/notices","/contact","/register").permitAll()
                 .and().formLogin()
                 .and().httpBasic();
 
