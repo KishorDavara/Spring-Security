@@ -63,8 +63,12 @@ public class ProjectSecurityConfig {
                 })
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests()
-                .requestMatchers("/myAccount", "/myBalance", "/myCards", "/myLoans","/user").authenticated()
-                .requestMatchers("/notices", "/contact", "/register").permitAll()
+                    .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
+                    .requestMatchers("/myBalance").hasAnyAuthority("VIEWACCOUNT","VIEWBALANCE")
+                    .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+                    .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
+                    .requestMatchers("/user").authenticated()
+                    .requestMatchers("/notices", "/contact", "/register").permitAll()
                 .and().formLogin()
                 .and().httpBasic();
 

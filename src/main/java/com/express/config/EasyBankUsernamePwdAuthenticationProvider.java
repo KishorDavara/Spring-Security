@@ -1,5 +1,6 @@
 package com.express.config;
 
+import com.express.model.Authority;
 import com.express.model.Customer;
 import com.express.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class EasyBankUsernamePwdAuthenticationProvider implements AuthenticationProvider {
@@ -46,15 +48,21 @@ public class EasyBankUsernamePwdAuthenticationProvider implements Authentication
         List<Customer> customers = customerRepository.findByEmail(userName);
         if (!customers.isEmpty()) {
             if (passwordEncoder.matches(password, customers.get(0).getPwd())) {
-                List<GrantedAuthority> authorities = new ArrayList<>();
-                authorities.add(new SimpleGrantedAuthority(customers.get(0).getRole()));
-                return new UsernamePasswordAuthenticationToken(userName, password, authorities);
+                return new UsernamePasswordAuthenticationToken(userName, password, getAuthorities(customers.get(0).getAuthorities()));
             } else {
                 throw new BadCredentialsException("Invalid password");
             }
         } else {
             throw new BadCredentialsException("No user registered with this details.");
         }
+    }
+
+    private List<GrantedAuthority> getAuthorities(Set<Authority> authorities) {
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+        for(Authority authority : authorities) {
+            grantedAuthorities.add(new SimpleGrantedAuthority(authority.getName()));
+        }
+        return grantedAuthorities;
     }
 
     /**
