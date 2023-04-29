@@ -66,6 +66,7 @@ public class ProjectSecurityConfig {
                 })
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+                .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests()
                     /*.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
