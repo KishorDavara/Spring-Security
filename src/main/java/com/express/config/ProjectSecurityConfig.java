@@ -1,6 +1,9 @@
 package com.express.config;
 
+import com.express.filter.AuthoritiesLoggingAfterFilter;
+import com.express.filter.AuthoritiesLoggingAtFilter;
 import com.express.filter.CsrfCookieFilter;
+import com.express.filter.RequestValidationBeforeFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
@@ -62,6 +65,7 @@ public class ProjectSecurityConfig {
                      */
                 })
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests()
                     /*.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
                     .requestMatchers("/myBalance").hasAnyAuthority("VIEWACCOUNT","VIEWBALANCE")
