@@ -1,9 +1,6 @@
 package com.express.config;
 
-import com.express.filter.AuthoritiesLoggingAfterFilter;
-import com.express.filter.AuthoritiesLoggingAtFilter;
-import com.express.filter.CsrfCookieFilter;
-import com.express.filter.RequestValidationBeforeFilter;
+import com.express.filter.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +24,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import javax.sql.DataSource;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -38,21 +36,18 @@ public class ProjectSecurityConfig {
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         CsrfTokenRequestAttributeHandler requestAttributeHandler = new CsrfTokenRequestAttributeHandler();
         requestAttributeHandler.setCsrfRequestAttributeName("_csrf");
-        /*
-         * Custom security configuration
-         * */
-        http.securityContext().requireExplicitSave(false)
-                .and().sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
-                /**
-                 * Above 2 line is useful to store the JSessionID to use for subsequent request
-                 * in case we're using custom login page of our UI application
-                 */
+
+        //Set session management to stateless this will prevent JSessionID from storing in cookie
+        http.sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                //enable CORS and CSRF protection
                 .cors().configurationSource(request -> {
                     CorsConfiguration configuration = new CorsConfiguration();
                     configuration.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
                     configuration.setAllowedMethods(Collections.singletonList("*"));
                     configuration.setAllowCredentials(true);
                     configuration.setAllowedHeaders(Collections.singletonList("*"));
+                    configuration.setExposedHeaders(Arrays.asList("Authorization")); // expose jwt token to UI application as header
                     configuration.setMaxAge(3600L);
                     return configuration;
                 })
@@ -68,45 +63,23 @@ public class ProjectSecurityConfig {
                 .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
                 .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
-                .authorizeHttpRequests()
-                    /*.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
-                    .requestMatchers("/myBalance").hasAnyAuthority("VIEWACCOUNT","VIEWBALANCE")
-                    .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
-                    .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")*/
-                    .requestMatchers("/myAccount").hasRole("USER")
-                    .requestMatchers("/myBalance").hasAnyRole("USER","ADMIN")
-                    .requestMatchers("/myCards").hasRole("USER")
-                    .requestMatchers("/myLoans").hasRole("USER")
+                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
 
-                    .requestMatchers("/user").authenticated()
-                    .requestMatchers("/notices", "/contact", "/register").permitAll()
+                .authorizeHttpRequests()
+                /*.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
+                .requestMatchers("/myBalance").hasAnyAuthority("VIEWACCOUNT","VIEWBALANCE")
+                .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+                .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")*/
+                .requestMatchers("/myAccount").hasRole("USER")
+                .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/myCards").hasRole("USER")
+                .requestMatchers("/myLoans").hasRole("USER")
+
+                .requestMatchers("/user").authenticated()
+                .requestMatchers("/notices", "/contact", "/register").permitAll()
                 .and().formLogin()
                 .and().httpBasic();
-
-        /*
-         * Configuration to deny all the requests coming towards the application
-         * */
-//        http.authorizeHttpRequests()
-//                .anyRequest().denyAll()
-//                .and().formLogin()
-//                .and().httpBasic();
-
-
-        /*
-         * Configuration to permit all the requests coming towards the application
-         * */
-//        http.authorizeHttpRequests()
-//                .anyRequest().permitAll()
-//                .and().formLogin()
-//                .and().httpBasic();
-
-        /**
-         * Configuration to authenticate every request : default behavior use by spring security
-         */
-//        http.authorizeHttpRequests()
-//                .anyRequest().authenticated()
-//                .and().formLogin()
-//                .and().httpBasic();
 
         return http.build();
     }
